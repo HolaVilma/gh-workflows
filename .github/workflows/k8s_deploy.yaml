@@ -78,6 +78,7 @@ jobs:
     - name: Deploy with kustomize
       run: |-
         cd "$KUSTOMIZATION_DIR"
+        echo SECRET NAME IS ["GH_K8S_SECRETS_NAME" ]
         if [ ! -z "${GH_K8S_SECRETS}"]; then
           echo ${GH_K8S_SECRETS} | base64 -d > .env.secret
         fi
@@ -96,4 +97,5 @@ jobs:
         IMAGES_TAGS: ${{ inputs.images_tags }}
         DEPLOYMENTS: ${{ inputs.deployments }}
         BASE_IMAGE_REPOSITORY: ${{ inputs.base_image_repository }}
+        GH_K8S_SECRETS_NAME: ${{ steps.vars.outputs.GH_K8S_SECRETS }}
         GH_K8S_SECRETS: ${{ secrets[steps.vars.outputs.GH_K8S_SECRETS] }}

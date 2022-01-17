@@ -38,6 +38,8 @@ on:
         required: true
       AWS_SECRET_ACCESS_KEY:
         required: true
+      GH_K8S_SECRETS:
+        required: false
 
 jobs:
   kustomize_deploy:
@@ -68,17 +70,9 @@ jobs:
         curl -sfLo /tmp/kustomize https://github.com/kubernetes-sigs/kustomize/releases/download/v3.1.0/kustomize_3.1.0_linux_amd64
         chmod u+x /tmp/kustomize
 
-    - name: Set Variables
-      id: vars
-      run: |-
-        echo "::set-output name=GH_K8S_SECRETS::ENV_SECRETS_${NAMESPACE^^}"
-      env:
-        NAMESPACE: ${{ inputs.namespace }}
-
     - name: Deploy with kustomize
       run: |-
         cd "$KUSTOMIZATION_DIR"
-        echo SECRET NAME IS ["GH_K8S_SECRETS_NAME" ]
         if [ ! -z "${GH_K8S_SECRETS}"]; then
           echo ${GH_K8S_SECRETS} | base64 -d > .env.secret
         fi
@@ -97,5 +91,4 @@ jobs:
         IMAGES_TAGS: ${{ inputs.images_tags }}
         DEPLOYMENTS: ${{ inputs.deployments }}
         BASE_IMAGE_REPOSITORY: ${{ inputs.base_image_repository }}
-        GH_K8S_SECRETS_NAME: ${{ steps.vars.outputs.GH_K8S_SECRETS }}
-        GH_K8S_SECRETS: ${{ secrets[steps.vars.outputs.GH_K8S_SECRETS] }}
+        GH_K8S_SECRETS: ${{ secrets.GH_K8S_SECRETS }}

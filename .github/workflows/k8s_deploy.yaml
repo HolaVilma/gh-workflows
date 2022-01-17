@@ -69,6 +69,7 @@ jobs:
         chmod u+x /tmp/kustomize
 
     - name: Set Variables
+      id: vars
       run: |-
         echo "::set-output name=GH_K8S_SECRETS::ENV_SECRETS_${NAMESPACE^^}"
       env:

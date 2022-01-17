@@ -23,9 +23,15 @@ on:
         description: 'Space separated k8s DEPLOYMENT names'
         type: string
         required: true
+      has_env_secrets:
+        description: 'Whether the project as a .env.secret file for kustomize secrets'
+        type: boolean
+        required: false
+        default: false
       aws_region:
         description: 'AWS Region'
         type: string
+        required: false
         default: eu-west-1
     secrets:
       AWS_ACCESS_KEY_ID:
@@ -62,9 +68,18 @@ jobs:
         curl -sfLo /tmp/kustomize https://github.com/kubernetes-sigs/kustomize/releases/download/v3.1.0/kustomize_3.1.0_linux_amd64
         chmod u+x /tmp/kustomize
 
+    - name: Set Variables
+      run: |-
+        echo "::set-output name=GH_K8S_SECRETS::ENV_SECRETS_${NAMESPACE^^}"
+      env:
+        NAMESPACE: ${{ inputs.namespace }}
+
     - name: Deploy with kustomize
       run: |-
         cd "$KUSTOMIZATION_DIR"
+        if [ ! -z "${GH_K8S_SECRETS}"]; then
+          echo ${GH_K8S_SECRETS} | base64 -d > .env.secret
+        fi
         /tmp/kustomize build .
         for IMAGE_TAG in $IMAGES_TAGS; \
           do IMAGE=$(echo "$IMAGE_TAG" | cut -d':' -f1) ; \
@@ -80,3 +95,4 @@ jobs:
         IMAGES_TAGS: ${{ inputs.images_tags }}
         DEPLOYMENTS: ${{ inputs.deployments }}
         BASE_IMAGE_REPOSITORY: ${{ inputs.base_image_repository }}
+        GH_K8S_SECRETS: ${{ secrets[steps.vars.outputs.GH_K8S_SECRETS] }}

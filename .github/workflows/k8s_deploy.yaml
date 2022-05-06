@@ -67,7 +67,6 @@ jobs:
 
     - name: DBG kubectl version
       run: |-
-        kubectl version
         type -a kubectl
 
 #    - name: Set up Kustomize
